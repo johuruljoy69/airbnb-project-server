@@ -91,6 +91,20 @@ async function run() {
             const room = req.body
             const result = await roomsCollection.insertOne(room)
             res.send(result)
+        });
+
+        // update room booking status
+        app.patch('/rooms/status/:id', async (req, res) => {
+            const id = req.params.id
+            const status = req.body.status
+            const query = { _id: new ObjectId(id) }
+            const updateDoc = {
+                $set: {
+                    booked: status,
+                },
+            }
+            const update = await roomsCollection.updateOne(query, updateDoc)
+            res.send(update)
         })
 
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
