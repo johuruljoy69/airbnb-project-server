@@ -60,7 +60,16 @@ async function run() {
         app.get('/rooms', async (req, res) => {
             const result = await roomsCollection.find().toArray()
             res.send(result)
+        });
+
+        // delete room
+        app.delete('/rooms/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
+            const result = await roomsCollection.deleteOne(query)
+            res.send(result)
         })
+
 
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
