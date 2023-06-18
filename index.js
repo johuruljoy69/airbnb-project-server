@@ -1,7 +1,11 @@
 const express = require('express')
 const app = express()
+const jwt = require('jsonwebtoken')
+const morgan = require('morgan')
 const cors = require('cors')
 require('dotenv').config()
+const nodemailer = require('nodemailer')
+const stripe = require('stripe')(process.env.PAYMENT_SECRET_KEY)
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
 const port = process.env.PORT || 5000
 
@@ -10,9 +14,29 @@ const corsOptions = {
     origin: '*',
     credentials: true,
     optionSuccessStatus: 200,
-}
-app.use(cors(corsOptions))
-app.use(express.json())
+  }
+  app.use(cors(corsOptions))
+  app.use(express.json())
+  app.use(morgan('dev'))
+
+const verifyJWT = (req, res, next) => {
+    const authorization = req.headers.authorization
+    if (!authorization) {
+      return res.status(401).send({ error: true, message: 'unauthorized access' })
+    }
+    // bearer token
+    const token = authorization.split(' ')[1]
+  
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+      if (err) {
+        return res
+          .status(401)
+          .send({ error: true, message: 'unauthorized access' })
+      }
+      req.decoded = decoded
+      next()
+    })
+  }
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.xmzpktv.mongodb.net/?retryWrites=true&w=majority`
