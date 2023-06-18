@@ -14,29 +14,29 @@ const corsOptions = {
     origin: '*',
     credentials: true,
     optionSuccessStatus: 200,
-  }
-  app.use(cors(corsOptions))
-  app.use(express.json())
-  app.use(morgan('dev'))
+}
+app.use(cors(corsOptions))
+app.use(express.json())
+app.use(morgan('dev'))
 
 const verifyJWT = (req, res, next) => {
     const authorization = req.headers.authorization
     if (!authorization) {
-      return res.status(401).send({ error: true, message: 'unauthorized access' })
+        return res.status(401).send({ error: true, message: 'unauthorized access' })
     }
     // bearer token
     const token = authorization.split(' ')[1]
-  
+
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-      if (err) {
-        return res
-          .status(401)
-          .send({ error: true, message: 'unauthorized access' })
-      }
-      req.decoded = decoded
-      next()
+        if (err) {
+            return res
+                .status(401)
+                .send({ error: true, message: 'unauthorized access' })
+        }
+        req.decoded = decoded
+        next()
     })
-  }
+}
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.xmzpktv.mongodb.net/?retryWrites=true&w=majority`
@@ -167,6 +167,22 @@ async function run() {
             const query = { host: email }
             const result = await bookingsCollection.find(query).toArray()
             res.send(result)
+        });
+
+        // create payment intent
+        app.post('/create-payment-intent', verifyJWT, async (req, res) => {
+            const { price } = req.body
+            const amount = parseFloat(price) * 100
+            if (!price) return
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                payment_method_types: ['card'],
+            })
+
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            })
         })
 
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
