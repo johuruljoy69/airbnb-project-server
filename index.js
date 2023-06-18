@@ -105,6 +105,20 @@ async function run() {
             }
             const update = await roomsCollection.updateOne(query, updateDoc)
             res.send(update)
+        });
+
+        // Update A room
+        app.put('/rooms/:id', verifyJWT, async (req, res) => {
+            const room = req.body
+            console.log(room)
+
+            const filter = { _id: new ObjectId(req.params.id) }
+            const options = { upsert: true }
+            const updateDoc = {
+                $set: room,
+            }
+            const result = await roomsCollection.updateOne(filter, updateDoc, options)
+            res.send(result)
         })
 
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
