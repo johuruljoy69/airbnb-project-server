@@ -119,6 +119,18 @@ async function run() {
             }
             const result = await roomsCollection.updateOne(filter, updateDoc, options)
             res.send(result)
+        });
+
+        // Get bookings for guest
+        app.get('/bookings', async (req, res) => {
+            const email = req.query.email
+
+            if (!email) {
+                res.send([])
+            }
+            const query = { 'guest.email': email }
+            const result = await bookingsCollection.find(query).toArray()
+            res.send(result)
         })
 
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
