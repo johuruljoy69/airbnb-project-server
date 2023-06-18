@@ -83,6 +83,14 @@ async function run() {
             const query = { _id: new ObjectId(id) }
             const result = await roomsCollection.findOne(query)
             res.send(result)
+        });
+
+        // Save a room in database
+        app.post('/rooms', verifyJWT, async (req, res) => {
+            console.log(req.decoded)
+            const room = req.body
+            const result = await roomsCollection.insertOne(room)
+            res.send(result)
         })
 
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
