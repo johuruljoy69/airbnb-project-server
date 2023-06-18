@@ -183,6 +183,32 @@ async function run() {
             res.send({
                 clientSecret: paymentIntent.client_secret,
             })
+        });
+
+        // Save a booking in database
+        app.post('/bookings', async (req, res) => {
+            const booking = req.body
+            const result = await bookingsCollection.insertOne(booking)
+            if (result.insertedId) {
+                // Send confirmation email to guest
+                sendMail(
+                    {
+                        subject: 'Booking Successful!',
+                        message: `Booking Id: ${result?.insertedId}, TransactionId: ${booking.transactionId}`,
+                    },
+                    booking?.guest?.email
+                )
+                // Send confirmation email to host
+                sendMail(
+                    {
+                        subject: 'Your room got booked!',
+                        message: `Booking Id: ${result?.insertedId}, TransactionId: ${booking.transactionId}. Check dashboard for more info`,
+                    },
+                    booking?.host
+                )
+            }
+            console.log(result)
+            res.send(result)
         })
 
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
