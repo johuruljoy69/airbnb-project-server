@@ -93,6 +93,13 @@ async function run() {
         const roomsCollection = client.db('airbnbDB').collection('rooms')
         const bookingsCollection = client.db('airbnbDB').collection('bookings')
 
+        // jwt token API
+        app.post('/jwt', (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '2h' })
+            res.send({ token })
+        })
+
         // Save user email and role in DB
         app.put('/users/:email', async (req, res) => {
             const email = req.params.email
